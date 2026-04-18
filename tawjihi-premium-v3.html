@@ -1,0 +1,2281 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أ. محمد أبو جاد | أستاذ اللغة العربية التوجيهي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+
+<!-- GSAP CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════
+   DESIGN TOKENS & RESET
+═══════════════════════════════════════ */
+:root {
+  --bg:          #050c17;
+  --bg2:         #071220;
+  --surface:     rgba(255,255,255,0.04);
+  --surface2:    rgba(255,255,255,0.07);
+  --border:      rgba(237,152,95,0.15);
+  --border2:     rgba(237,152,95,0.30);
+  --gold:        #ED985F;
+  --gold2:       #F7B980;
+  --gold3:       #FFD4A8;
+  --gold-glow:   rgba(237,152,95,0.40);
+  --gold-glow2:  rgba(237,152,95,0.15);
+  --white:       #ffffff;
+  --muted:       rgba(255,255,255,0.55);
+  --dim:         rgba(255,255,255,0.28);
+  --radius:      20px;
+  --radius-lg:   28px;
+  --font:        'Cairo', sans-serif;
+  --ease:        cubic-bezier(0.16,1,0.3,1);
+}
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; font-size:16px; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--white);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg,var(--gold),var(--gold2)); border-radius:4px; }
+img { display:block; max-width:100%; }
+a { text-decoration:none; color:inherit; }
+button { cursor:pointer; font-family:var(--font); }
+
+/* ═══════════════════════════════════════
+   SCROLL PROGRESS BAR
+═══════════════════════════════════════ */
+#progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--gold), var(--gold2), var(--gold3));
+  z-index: 9999;
+  transition: width .1s linear;
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+/* ═══════════════════════════════════════
+   PRELOADER
+═══════════════════════════════════════ */
+#preloader {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+.pre-logo {
+  font-size: 3rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0;
+  transform: translateY(20px);
+}
+.pre-bar-wrap {
+  width: 200px;
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.pre-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+  border-radius: 2px;
+  transition: width .05s linear;
+}
+.pre-text {
+  font-size: .8rem;
+  color: var(--muted);
+  letter-spacing: 2px;
+}
+
+/* ═══════════════════════════════════════
+   CURSOR
+═══════════════════════════════════════ */
+#cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: var(--gold);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: width .3s var(--ease), height .3s var(--ease), opacity .3s;
+  mix-blend-mode: difference;
+}
+#cursor-follower {
+  position: fixed;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(237,152,95,.06) 0%, transparent 65%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  transform: translate(-50%,-50%);
+  transition: transform .8s var(--ease);
+}
+body:has(a:hover) #cursor, body:has(button:hover) #cursor { width:28px; height:28px; opacity:.5; }
+
+/* ═══════════════════════════════════════
+   CANVAS — Particles
+═══════════════════════════════════════ */
+#particles-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .5;
+}
+
+/* ═══════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════ */
+nav {
+  position: fixed;
+  top: 0; width: 100%;
+  z-index: 1000;
+  padding: 1.2rem 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all .6s var(--ease);
+}
+nav::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(5,12,23,0);
+  backdrop-filter: blur(0px);
+  border-bottom: 1px solid rgba(237,152,95,0);
+  transition: all .6s var(--ease);
+  z-index: -1;
+}
+nav.solid::after {
+  background: rgba(5,12,23,0.92);
+  backdrop-filter: blur(28px);
+  border-bottom-color: var(--border);
+  box-shadow: 0 8px 50px rgba(0,0,0,.5);
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+}
+.logo-mark {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  display: flex; align-items:center; justify-content:center;
+  font-size: 1.3rem; font-weight: 900;
+  color: var(--bg);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px var(--gold-glow);
+}
+.logo-mark::after {
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(135deg,rgba(255,255,255,.3),transparent);
+}
+.logo-text { font-size:1rem; font-weight:700; }
+.logo-text em { color:var(--gold); font-style:normal; }
+.nav-links {
+  display: flex;
+  list-style: none;
+  align-items: center;
+  gap: .3rem;
+}
+.nav-links a {
+  font-size: .83rem;
+  font-weight: 500;
+  color: var(--muted);
+  padding: .45rem .9rem;
+  border-radius: 8px;
+  transition: all .3s;
+  position: relative;
+}
+.nav-links a:hover { color: var(--white); background: var(--surface); }
+.nav-links a.active { color: var(--gold); }
+.nav-btn {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: var(--bg);
+  font-size: .83rem;
+  font-weight: 700;
+  padding: .55rem 1.4rem;
+  border-radius: 50px;
+  border: none;
+  display: flex; align-items:center; gap:.4rem;
+  box-shadow: 0 4px 20px var(--gold-glow);
+  transition: all .35s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+.nav-btn::before {
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(135deg, var(--gold2), var(--gold3));
+  opacity: 0;
+  transition: opacity .3s;
+}
+.nav-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px var(--gold-glow); }
+.nav-btn:hover::before { opacity: 1; }
+.nav-btn span { position:relative; z-index:1; }
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: .4rem;
+}
+.hamburger span {
+  width: 22px; height: 2px;
+  background: var(--white);
+  border-radius: 2px;
+  transition: all .3s;
+  display:block;
+}
+
+/* ═══════════════════════════════════════
+   HERO
+═══════════════════════════════════════ */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 8rem 3rem 5rem;
+  position: relative;
+  overflow: hidden;
+}
+/* Mesh gradient background */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 50%, rgba(237,152,95,.11) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 20%, rgba(247,185,128,.07) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 55% 90%, rgba(5,20,50,.9) 0%, transparent 60%);
+}
+/* Subtle grid */
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(237,152,95,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(237,152,95,.03) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 75%);
+}
+/* Glowing orbs */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+.orb-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(237,152,95,.18), transparent 70%);
+  top: -10%; right: 10%;
+  animation: orbFloat 8s ease-in-out infinite;
+}
+.orb-2 {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(0,80,180,.15), transparent 70%);
+  bottom: 5%; left: 5%;
+  animation: orbFloat 11s ease-in-out infinite reverse;
+}
+@keyframes orbFloat {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(30px,-20px) scale(1.05); }
+  66% { transform: translate(-20px,15px) scale(.95); }
+}
+
+.hero-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 6rem;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* Hero text */
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  background: rgba(237,152,95,.1);
+  border: 1px solid rgba(237,152,95,.25);
+  padding: .4rem 1.1rem;
+  border-radius: 50px;
+  font-size: .75rem;
+  color: var(--gold2);
+  margin-bottom: 1.8rem;
+  backdrop-filter: blur(10px);
+  opacity: 0;
+}
+.pill-dot {
+  width: 6px; height: 6px;
+  background: var(--gold);
+  border-radius: 50%;
+  animation: pulseDot 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes pulseDot {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:.4; transform:scale(.7); }
+}
+
+.hero-h1 {
+  font-size: clamp(2.4rem, 4.5vw, 4rem);
+  font-weight: 900;
+  line-height: 1.12;
+  margin-bottom: 1.6rem;
+  opacity: 0;
+}
+.grad-text {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 50%, var(--gold3) 100%);
+  background-size: 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradShift 4s ease-in-out infinite alternate;
+}
+@keyframes gradShift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+.hero-sub {
+  font-size: 1rem;
+  color: var(--muted);
+  line-height: 2;
+  margin-bottom: 2.4rem;
+  max-width: 520px;
+  opacity: 0;
+}
+
+/* Hero stats row */
+.hero-stats-row {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2.8rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  opacity: 0;
+}
+.hstat {
+  flex: 1;
+  padding: 1rem 1.2rem;
+  text-align: center;
+  position: relative;
+  transition: background .3s;
+}
+.hstat:hover { background: var(--surface2); }
+.hstat:not(:last-child)::after {
+  content:'';
+  position:absolute;
+  right:0; top:15%; height:70%; width:1px;
+  background: var(--border);
+}
+.hstat-num {
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: var(--gold);
+  line-height: 1;
+  display:block;
+}
+.hstat-label {
+  font-size: .68rem;
+  color: var(--muted);
+  margin-top: .3rem;
+  white-space: nowrap;
+}
+
+/* CTA buttons */
+.hero-ctas {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  opacity: 0;
+}
+.btn-glow {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .95rem 2.2rem;
+  border-radius: 50px;
+  font-size: .95rem;
+  font-weight: 700;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  transition: all .4s var(--ease);
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: var(--bg);
+  box-shadow: 0 6px 25px var(--gold-glow), 0 0 0 0 var(--gold-glow);
+}
+.btn-glow::after {
+  content:'';
+  position:absolute; inset:-2px;
+  border-radius:inherit;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  z-index:-1;
+  filter: blur(20px);
+  opacity: 0;
+  transition: opacity .4s;
+}
+.btn-glow:hover { transform: translateY(-3px); box-shadow: 0 14px 40px var(--gold-glow); }
+.btn-glow:hover::after { opacity: .7; }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .95rem 2.2rem;
+  border-radius: 50px;
+  font-size: .95rem;
+  font-weight: 600;
+  border: 1.5px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.04);
+  color: var(--white);
+  backdrop-filter: blur(8px);
+  transition: all .35s var(--ease);
+}
+.btn-ghost:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(237,152,95,.07);
+  transform: translateY(-3px);
+}
+
+/* ── Hero Visual Card ── */
+.hero-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.profile-card {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(237,152,95,.2);
+  border-radius: 28px;
+  padding: 2.4rem;
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 340px;
+  box-shadow:
+    0 40px 100px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 0 0 1px rgba(255,255,255,.03);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.profile-card::before {
+  content:'';
+  position:absolute;
+  top:-80%; right:-80%;
+  width:240%; height:240%;
+  background: radial-gradient(circle, rgba(237,152,95,.07) 0%, transparent 55%);
+  animation: cardRotate 12s linear infinite;
+  pointer-events:none;
+}
+@keyframes cardRotate { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+
+.profile-card::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, transparent 50%);
+  border-radius:inherit;
+  pointer-events:none;
+}
+
+.avatar-ring {
+  width: 170px; height: 170px;
+  border-radius: 50%;
+  margin: 0 auto 1.6rem;
+  position: relative;
+  z-index:1;
+}
+.avatar-ring::before {
+  content:'';
+  position:absolute; inset:-4px;
+  border-radius:50%;
+  background: conic-gradient(var(--gold), var(--gold2), var(--gold3), var(--gold));
+  animation: spinRing 4s linear infinite;
+  z-index:-1;
+}
+@keyframes spinRing { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+.avatar-ring::after {
+  content:'';
+  position:absolute; inset:-2px;
+  border-radius:50%;
+  background: var(--bg2);
+  z-index: 0;
+}
+.avatar-ring img {
+  width:100%; height:100%;
+  border-radius:50%;
+  object-fit:cover;
+  object-position: top center;
+  position:relative;
+  z-index:1;
+}
+
+.card-name { font-size:1.2rem; font-weight:800; text-align:center; position:relative;z-index:1; }
+.card-title { color:var(--gold2); font-size:.78rem; text-align:center; margin:.3rem 0 1.1rem; line-height:1.7; position:relative;z-index:1; }
+.card-tags { display:flex; flex-wrap:wrap; gap:.4rem; justify-content:center; position:relative;z-index:1; }
+.ctag {
+  background: rgba(237,152,95,.1);
+  border: 1px solid rgba(237,152,95,.2);
+  padding: .28rem .75rem;
+  border-radius: 20px;
+  font-size: .68rem;
+  color: var(--gold2);
+  display:flex; align-items:center; gap:.3rem;
+}
+
+/* Floating chips */
+.chip {
+  position: absolute;
+  background: rgba(5,12,23,.93);
+  border: 1px solid rgba(237,152,95,.28);
+  border-radius: 14px;
+  padding: .7rem 1rem;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.4);
+  z-index: 5;
+  will-change: transform;
+}
+.chip-1 { top: 0; left: -30px; animation: chipFloat1 4s ease-in-out infinite; }
+.chip-2 { bottom: 0; right: -30px; animation: chipFloat2 5s ease-in-out infinite; }
+@keyframes chipFloat1 {
+  0%,100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-12px) rotate(1deg); }
+}
+@keyframes chipFloat2 {
+  0%,100% { transform: translateY(0) rotate(2deg); }
+  50% { transform: translateY(12px) rotate(-1deg); }
+}
+.chip-val { font-size:1.1rem; font-weight:900; color:var(--gold); }
+.chip-lbl { font-size:.62rem; color:var(--muted); }
+
+/* ═══════════════════════════════════════
+   STATS STRIP
+═══════════════════════════════════════ */
+.stats-strip {
+  position:relative; z-index:2;
+  background: linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  padding: 2rem 3rem;
+  overflow: hidden;
+}
+.stats-strip::before {
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(90deg,transparent, rgba(237,152,95,.04), transparent);
+  animation: shimmerStrip 3s ease-in-out infinite;
+}
+@keyframes shimmerStrip {
+  0%,100%{opacity:0} 50%{opacity:1}
+}
+.stats-strip-inner {
+  max-width:1240px; margin:0 auto;
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 1rem;
+}
+.sstat {
+  text-align:center;
+  position:relative;
+  padding: .5rem 0;
+}
+.sstat:not(:last-child)::after {
+  content:'';
+  position:absolute;
+  left:0; top:10%; height:80%; width:1px;
+  background: var(--border);
+}
+.sstat-icon {
+  width:36px; height:36px;
+  border-radius:10px;
+  background: var(--gold-glow2);
+  border: 1px solid var(--border2);
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto .6rem;
+  transition: all .3s;
+}
+.sstat:hover .sstat-icon { background:rgba(237,152,95,.25); transform:scale(1.1); }
+.sstat-num {
+  font-size:2.2rem; font-weight:900;
+  background: linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  display:block; line-height:1;
+}
+.sstat-label { font-size:.78rem; color:var(--muted); margin-top:.3rem; }
+
+/* ═══════════════════════════════════════
+   SECTIONS COMMON
+═══════════════════════════════════════ */
+.section { padding:7rem 3rem; position:relative; z-index:2; }
+.section-alt { background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%); }
+.container { max-width:1240px; margin:0 auto; }
+
+.section-eyebrow {
+  display:inline-flex; align-items:center; gap:.5rem;
+  background: var(--gold-glow2);
+  border: 1px solid var(--border2);
+  color: var(--gold);
+  padding: .35rem 1rem;
+  border-radius: 50px;
+  font-size: .74rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.section-h2 {
+  font-size: clamp(1.8rem,3.5vw,2.8rem);
+  font-weight: 900;
+  line-height: 1.18;
+  margin-bottom: 1rem;
+}
+.section-h2 span {
+  background: linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.section-lead { color:var(--muted); font-size:.97rem; line-height:1.9; max-width:580px; }
+
+/* ═══════════════════════════════════════
+   ABOUT
+═══════════════════════════════════════ */
+.about-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 5rem;
+  align-items: start;
+}
+.about-img-col { position:relative; }
+.about-photo-frame {
+  border-radius:28px;
+  overflow:hidden;
+  aspect-ratio: 3/4;
+  border: 1px solid var(--border);
+  position:relative;
+  box-shadow: 0 30px 80px rgba(0,0,0,.5);
+}
+.about-photo-frame img {
+  width:100%;height:100%;
+  object-fit:cover;
+  object-position:top center;
+  transition: transform .6s var(--ease);
+}
+.about-photo-frame:hover img { transform:scale(1.04); }
+.about-photo-frame::after {
+  content:'';
+  position:absolute; bottom:0; left:0; right:0; height:40%;
+  background: linear-gradient(to top, rgba(5,12,23,.7), transparent);
+  pointer-events:none;
+}
+.about-badge {
+  position:absolute;
+  bottom:-18px; right:-18px;
+  background: linear-gradient(135deg,var(--gold),var(--gold2));
+  border-radius:20px;
+  padding:1.1rem 1.4rem;
+  text-align:center;
+  box-shadow: 0 12px 40px var(--gold-glow);
+  z-index:2;
+}
+.ab-num { font-size:2rem; font-weight:900; color:var(--bg); line-height:1; }
+.ab-lbl { font-size:.6rem; font-weight:700; color:var(--bg); opacity:.85; line-height:1.4; margin-top:.2rem; }
+
+.timeline {
+  margin-top:2.8rem;
+  display:flex;
+  flex-direction:column;
+  gap:.8rem;
+}
+.tl-item {
+  display:flex;
+  gap:1rem;
+  align-items:flex-start;
+  padding:.9rem 1rem;
+  border-radius:16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: all .35s var(--ease);
+  cursor:default;
+}
+.tl-item:hover {
+  border-color: var(--border2);
+  background: rgba(237,152,95,.06);
+  transform: translateX(-5px);
+  box-shadow: 0 8px 30px rgba(0,0,0,.2);
+}
+.tl-icon {
+  width:38px; height:38px;
+  border-radius:12px;
+  background: var(--gold-glow2);
+  border: 1px solid var(--border2);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+  transition: all .3s;
+}
+.tl-item:hover .tl-icon { background: rgba(237,152,95,.22); }
+.tl-year { font-size:.72rem; color:var(--gold); font-weight:700; margin-bottom:.2rem; }
+.tl-text { font-size:.83rem; color:rgba(255,255,255,.78); line-height:1.65; }
+
+/* About right col */
+.about-feats {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.8rem;
+  margin-top:1.6rem;
+}
+.feat-item {
+  display:flex; align-items:center; gap:.75rem;
+  padding:.85rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius:14px;
+  transition: all .3s var(--ease);
+  cursor:default;
+}
+.feat-item:hover {
+  border-color:var(--border2);
+  background:rgba(237,152,95,.06);
+  transform:translateY(-3px);
+  box-shadow:0 8px 25px rgba(0,0,0,.2);
+}
+.feat-icon {
+  width:34px; height:34px;
+  border-radius:9px;
+  background:var(--gold-glow2);
+  border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.feat-text { font-size:.8rem; color:rgba(255,255,255,.8); font-weight:600; line-height:1.4; }
+.center-chips { display:flex; gap:.75rem; flex-wrap:wrap; margin-top:.5rem; }
+.cchip {
+  display:flex; align-items:center; gap:.4rem;
+  background:var(--gold-glow2);
+  border:1px solid var(--border2);
+  padding:.5rem 1rem;
+  border-radius:10px;
+  font-size:.8rem;
+  color:var(--gold2);
+  transition:all .3s;
+}
+.cchip:hover { background:rgba(237,152,95,.18); transform:translateY(-2px); }
+
+/* ═══════════════════════════════════════
+   SERVICES
+═══════════════════════════════════════ */
+.services-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1.4rem;
+  margin-top:3.5rem;
+}
+.svc-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:2.2rem;
+  position:relative;
+  overflow:hidden;
+  transition:all .45s var(--ease);
+  cursor:default;
+  transform-style:preserve-3d;
+  will-change:transform;
+}
+.svc-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--gold2));
+  transform:scaleX(0);
+  transform-origin:right;
+  transition:transform .45s var(--ease);
+}
+.svc-card::after {
+  content:'';
+  position:absolute; inset:0;
+  background:radial-gradient(circle at 50% 0%, rgba(237,152,95,.08) 0%, transparent 60%);
+  opacity:0;
+  transition:opacity .45s;
+}
+.svc-card:hover {
+  transform:translateY(-12px);
+  border-color:var(--border2);
+  background:rgba(237,152,95,.06);
+  box-shadow: 0 25px 70px rgba(0,0,0,.4), 0 0 0 1px rgba(237,152,95,.12);
+}
+.svc-card:hover::before { transform:scaleX(1); transform-origin:left; }
+.svc-card:hover::after { opacity:1; }
+.svc-card.featured {
+  border-color:rgba(237,152,95,.3);
+  background:rgba(237,152,95,.07);
+}
+.svc-badge {
+  position:absolute; top:1.2rem; left:1.2rem;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--bg);
+  padding:.25rem .8rem;
+  border-radius:20px;
+  font-size:.67rem;
+  font-weight:800;
+  display:flex; align-items:center; gap:.3rem;
+}
+.svc-icon {
+  width:60px; height:60px;
+  border-radius:18px;
+  background:var(--gold-glow2);
+  border:1px solid var(--border2);
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom:1.4rem;
+  transition:all .45s var(--ease);
+  position:relative; z-index:1;
+}
+.svc-card:hover .svc-icon {
+  background:rgba(237,152,95,.2);
+  transform:scale(1.08) rotate(-3deg);
+  box-shadow:0 8px 25px var(--gold-glow);
+}
+.svc-title { font-size:1rem; font-weight:700; margin-bottom:.7rem; position:relative;z-index:1; }
+.svc-desc { font-size:.82rem; color:var(--muted); line-height:1.78; margin-bottom:1.4rem; position:relative;z-index:1; }
+.svc-list { list-style:none; display:flex; flex-direction:column; gap:.5rem; margin-bottom:1.6rem; position:relative;z-index:1; }
+.svc-list li {
+  font-size:.78rem;
+  color:rgba(255,255,255,.72);
+  padding-right:1.3rem;
+  position:relative;
+  line-height:1.55;
+}
+.svc-list li::before {
+  content:'';
+  position:absolute; right:0; top:.5em;
+  width:7px; height:7px;
+  border-radius:50%;
+  background:var(--gold);
+  opacity:.75;
+}
+.svc-btn {
+  width:100%;
+  padding:.75rem;
+  border-radius:12px;
+  border:1.5px solid var(--border2);
+  background:transparent;
+  color:var(--gold2);
+  font-family:var(--font);
+  font-size:.86rem;
+  font-weight:700;
+  transition:all .35s var(--ease);
+  position:relative;
+  overflow:hidden;
+  z-index:1;
+}
+.svc-btn::before {
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  transform:scaleX(0);
+  transform-origin:right;
+  transition:transform .35s var(--ease);
+  z-index:-1;
+}
+.svc-btn:hover { color:var(--bg); border-color:transparent; }
+.svc-btn:hover::before { transform:scaleX(1); transform-origin:left; }
+
+/* ═══════════════════════════════════════
+   RESULTS
+═══════════════════════════════════════ */
+.results-header-row {
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:end;
+  gap:2rem;
+  margin-bottom:3.5rem;
+}
+.perfect-badge {
+  text-align:center;
+  background:var(--gold-glow2);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  padding:1.6rem 2.2rem;
+  flex-shrink:0;
+  position:relative;
+  overflow:hidden;
+}
+.perfect-badge::before {
+  content:'';
+  position:absolute; inset:0;
+  background:radial-gradient(circle at 50% 0%, rgba(237,152,95,.15) 0%, transparent 70%);
+}
+.perfect-num {
+  font-size:3.5rem; font-weight:900;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  line-height:1;
+  position:relative;
+}
+.perfect-lbl { font-size:.8rem; color:var(--muted); margin-top:.4rem; position:relative; }
+
+.scores-grid {
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:1rem;
+  margin-bottom:3.5rem;
+}
+.score-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:1.3rem;
+  transition:all .35s var(--ease);
+  cursor:default;
+  position:relative;
+  overflow:hidden;
+}
+.score-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--gold2));
+  transform:scaleX(0); transform-origin:right;
+  transition:transform .35s var(--ease);
+}
+.score-card:hover {
+  border-color:var(--border2);
+  background:rgba(237,152,95,.08);
+  transform:translateY(-6px);
+  box-shadow:0 15px 40px rgba(0,0,0,.3);
+}
+.score-card:hover::before { transform:scaleX(1); transform-origin:left; }
+.sc-num { font-size:1.5rem; font-weight:900; color:var(--gold); }
+.sc-pct { font-size:.85rem; color:var(--gold2); font-weight:700; }
+.sc-sub { font-size:.63rem; color:var(--gold2); margin-top:.25rem; font-weight:600; }
+.sc-name { font-size:.66rem; color:rgba(255,255,255,.75); margin-top:.3rem; font-weight:600; line-height:1.45; }
+.sc-seat { font-size:.58rem; color:var(--dim); margin-top:.2rem; direction:ltr; text-align:right; }
+
+/* Testimonials */
+.testi-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1.5rem;
+}
+.testi-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:2rem;
+  transition:all .4s var(--ease);
+  position:relative;
+  overflow:hidden;
+}
+.testi-card::before {
+  content:'';
+  position:absolute; bottom:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--gold),var(--gold2));
+  transform:scaleX(0); transform-origin:right;
+  transition:transform .4s var(--ease);
+}
+.testi-card:hover {
+  border-color:var(--border2);
+  transform:translateY(-6px);
+  box-shadow:0 20px 50px rgba(0,0,0,.3);
+}
+.testi-card:hover::before { transform:scaleX(1); transform-origin:left; }
+.testi-qmark { font-size:3.5rem; color:var(--gold); line-height:.8; opacity:.3; font-family:Georgia,serif; margin-bottom:.8rem; }
+.testi-stars { color:var(--gold); font-size:.82rem; letter-spacing:2px; margin-bottom:.8rem; }
+.testi-text { font-size:.85rem; color:rgba(255,255,255,.78); line-height:1.95; margin-bottom:1.5rem; font-style:italic; }
+.testi-author { display:flex; align-items:center; gap:.75rem; }
+.testi-av {
+  width:44px; height:44px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.1rem; font-weight:700;
+  color:var(--bg);
+  flex-shrink:0;
+  border:2px solid rgba(237,152,95,.3);
+}
+.testi-name { font-weight:700; font-size:.88rem; }
+.testi-info { font-size:.7rem; color:var(--muted); }
+
+/* ═══════════════════════════════════════
+   MULTI-STEP BOOKING
+═══════════════════════════════════════ */
+.booking-wrap {
+  max-width:680px;
+  margin:3.5rem auto 0;
+}
+.booking-steps {
+  display:flex;
+  align-items:center;
+  gap:0;
+  margin-bottom:2.5rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:50px;
+  padding:.4rem;
+  position:relative;
+}
+.bstep {
+  flex:1;
+  text-align:center;
+  padding:.65rem;
+  border-radius:50px;
+  font-size:.8rem;
+  font-weight:600;
+  color:var(--muted);
+  transition:all .4s var(--ease);
+  cursor:pointer;
+  position:relative;
+  z-index:1;
+}
+.bstep.active {
+  color:var(--bg);
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  box-shadow:0 4px 15px var(--gold-glow);
+}
+.bstep.done { color:var(--gold); }
+
+.booking-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:2.8rem;
+  backdrop-filter:blur(12px);
+  box-shadow:0 30px 80px rgba(0,0,0,.3);
+  position:relative;
+  overflow:hidden;
+}
+.booking-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--gold2));
+}
+
+.step-panel { display:none; }
+.step-panel.active { display:block; animation:stepIn .4s var(--ease) both; }
+@keyframes stepIn {
+  from { opacity:0; transform:translateY(16px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.step-title { font-size:1.1rem; font-weight:700; color:var(--gold2); margin-bottom:1.8rem; display:flex; align-items:center; gap:.6rem; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.1rem; }
+.form-row.single { grid-template-columns:1fr; }
+.fgroup { display:flex; flex-direction:column; gap:.45rem; }
+.flabel { font-size:.8rem; color:rgba(255,255,255,.65); font-weight:600; }
+.finput, .fselect, .ftextarea {
+  background:rgba(255,255,255,.055);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:.85rem 1rem;
+  color:var(--white);
+  font-family:var(--font);
+  font-size:.9rem;
+  outline:none;
+  transition:all .3s;
+  width:100%;
+}
+.finput:focus, .fselect:focus, .ftextarea:focus {
+  border-color:var(--gold);
+  background:rgba(237,152,95,.07);
+  box-shadow:0 0 0 3px rgba(237,152,95,.12);
+}
+.finput::placeholder, .ftextarea::placeholder { color:var(--dim); }
+.fselect { background:rgba(5,18,40,.97); cursor:pointer; }
+.ftextarea { resize:vertical; }
+
+.time-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; margin-top:.5rem; }
+.tslot {
+  padding:.58rem;
+  border:1px solid var(--border);
+  border-radius:10px;
+  text-align:center;
+  font-size:.77rem;
+  cursor:pointer;
+  transition:all .3s var(--ease);
+  font-family:var(--font);
+  color:rgba(255,255,255,.6);
+  background:rgba(255,255,255,.03);
+}
+.tslot:hover, .tslot.sel { background:rgba(237,152,95,.18); border-color:var(--gold); color:var(--gold2); font-weight:700; }
+.tslot.booked { background:rgba(255,255,255,.02); color:rgba(255,255,255,.18); cursor:not-allowed; border-color:rgba(255,255,255,.05); }
+
+.urgency-strip {
+  display:flex; align-items:center; gap:.75rem;
+  background:rgba(237,152,95,.09);
+  border:1px solid rgba(237,152,95,.22);
+  border-radius:12px;
+  padding:.85rem 1.1rem;
+  margin-bottom:1.8rem;
+}
+.upulse { width:8px; height:8px; border-radius:50%; background:var(--gold); animation:pulseDot 1.5s ease-in-out infinite; flex-shrink:0; }
+.utext { font-size:.8rem; color:rgba(255,255,255,.85); font-weight:600; }
+.utext span { color:var(--gold); }
+
+.step-btns { display:flex; gap:.75rem; margin-top:1.8rem; }
+.btn-next {
+  flex:1;
+  padding:.9rem;
+  border-radius:12px;
+  border:none;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--bg);
+  font-family:var(--font);
+  font-size:.95rem;
+  font-weight:700;
+  transition:all .35s var(--ease);
+  box-shadow:0 6px 20px var(--gold-glow);
+}
+.btn-next:hover { transform:translateY(-2px); box-shadow:0 10px 30px var(--gold-glow); }
+.btn-back {
+  padding:.9rem 1.4rem;
+  border-radius:12px;
+  border:1.5px solid var(--border);
+  background:transparent;
+  color:var(--muted);
+  font-family:var(--font);
+  font-size:.9rem;
+  font-weight:600;
+  transition:all .3s;
+}
+.btn-back:hover { border-color:var(--gold); color:var(--gold); }
+.btn-wa {
+  flex:1;
+  padding:.9rem;
+  border-radius:12px;
+  border:none;
+  background:linear-gradient(135deg,#25d366,#20ba5a);
+  color:#fff;
+  font-family:var(--font);
+  font-size:.95rem;
+  font-weight:700;
+  display:flex; align-items:center; justify-content:center; gap:.6rem;
+  transition:all .35s var(--ease);
+  box-shadow:0 6px 20px rgba(37,211,102,.25);
+}
+.btn-wa:hover { transform:translateY(-2px); box-shadow:0 12px 35px rgba(37,211,102,.35); }
+
+.booking-note { margin-top:1rem; text-align:center; font-size:.74rem; color:var(--dim); display:flex; align-items:center; justify-content:center; gap:.4rem; }
+
+/* ═══════════════════════════════════════
+   FAQ
+═══════════════════════════════════════ */
+.faq-list { max-width:820px; margin:3.5rem auto 0; display:flex; flex-direction:column; gap:.9rem; }
+.faq-item {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;
+  overflow:hidden;
+  transition:all .35s var(--ease);
+}
+.faq-item.open { border-color:var(--border2); background:rgba(237,152,95,.05); }
+.faq-q {
+  padding:1.2rem 1.5rem;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+  font-weight:600;
+  font-size:.93rem;
+  gap:1rem;
+  transition:color .3s;
+}
+.faq-q:hover { color:var(--gold2); }
+.faq-ic {
+  width:30px; height:30px;
+  border-radius:9px;
+  background:var(--gold-glow2);
+  border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--gold);
+  font-size:1.2rem;
+  transition:all .35s;
+  flex-shrink:0;
+}
+.faq-item.open .faq-ic { transform:rotate(45deg); background:rgba(237,152,95,.2); }
+.faq-ans { max-height:0; overflow:hidden; transition:max-height .45s var(--ease); }
+.faq-item.open .faq-ans { max-height:220px; }
+.faq-ans-inner { padding:.5rem 1.5rem 1.5rem; font-size:.88rem; color:rgba(255,255,255,.68); line-height:1.85; }
+
+/* ═══════════════════════════════════════
+   CONTACT
+═══════════════════════════════════════ */
+.contact-layout { display:grid; grid-template-columns:1fr 1.5fr; gap:4rem; margin-top:3.5rem; }
+.contact-items { display:flex; flex-direction:column; gap:.9rem; }
+.citem {
+  display:flex; align-items:center; gap:1rem;
+  padding:1.2rem 1.4rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;
+  transition:all .35s var(--ease);
+  text-decoration:none; color:inherit;
+}
+.citem:hover { border-color:var(--border2); transform:translateX(-5px); background:rgba(237,152,95,.05); }
+.citem-icon {
+  width:48px; height:48px;
+  border-radius:14px;
+  background:var(--gold-glow2);
+  border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+  transition:all .3s;
+}
+.citem:hover .citem-icon { background:rgba(237,152,95,.2); }
+.citem-lbl { font-size:.72rem; color:var(--muted); }
+.citem-val { font-size:.93rem; font-weight:700; }
+.wa-big {
+  background:linear-gradient(135deg,#25d366,#128c7e);
+  color:#fff;
+  padding:1rem 2rem;
+  border-radius:18px;
+  border:none;
+  font-family:var(--font); font-size:1rem; font-weight:700;
+  cursor:pointer;
+  display:flex; align-items:center; gap:.75rem;
+  width:100%; justify-content:center;
+  transition:all .35s var(--ease);
+  box-shadow:0 6px 25px rgba(37,211,102,.25);
+}
+.wa-big:hover { transform:translateY(-3px); box-shadow:0 12px 35px rgba(37,211,102,.35); }
+.social-bar { display:flex; gap:.7rem; justify-content:center; margin-top:.75rem; }
+.soc-btn {
+  width:46px; height:46px;
+  border-radius:12px;
+  background:var(--gold-glow2);
+  border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  text-decoration:none;
+  transition:all .35s var(--ease);
+  color:var(--gold2);
+}
+.soc-btn:hover { background:rgba(237,152,95,.2); transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,.3); }
+.contact-form-box {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:2.5rem;
+  backdrop-filter:blur(10px);
+  position:relative;
+  overflow:hidden;
+}
+.contact-form-box::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--gold2));
+}
+
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+footer {
+  background: rgba(0,5,15,1);
+  border-top:1px solid var(--border);
+  padding:4rem 3rem 2rem;
+  position:relative;
+  z-index:2;
+}
+footer::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.footer-grid {
+  max-width:1240px; margin:0 auto;
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr 1fr;
+  gap:3rem;
+  margin-bottom:3rem;
+}
+.footer-brand-desc { font-size:.8rem; color:rgba(255,255,255,.4); line-height:2; margin-top:1rem; }
+.footer-social { display:flex; gap:.7rem; margin-top:1.5rem; }
+.footer-htitle { font-size:.86rem; font-weight:700; color:var(--gold2); margin-bottom:1.2rem; }
+.footer-links { list-style:none; display:flex; flex-direction:column; gap:.6rem; }
+.footer-links a { color:rgba(255,255,255,.42); font-size:.8rem; transition:all .3s; }
+.footer-links a:hover { color:var(--gold2); padding-right:.3rem; }
+.footer-bottom {
+  max-width:1240px; margin:0 auto;
+  padding-top:1.5rem;
+  border-top:1px solid rgba(255,255,255,.06);
+  display:flex; justify-content:space-between; align-items:center;
+  flex-wrap:wrap; gap:1rem;
+}
+.footer-copy { font-size:.75rem; color:rgba(255,255,255,.25); }
+
+/* ═══════════════════════════════════════
+   STICKY CTA
+═══════════════════════════════════════ */
+.sticky-fab {
+  position:fixed;
+  bottom:2rem; left:2rem;
+  z-index:999;
+  display:flex; flex-direction:column; gap:.75rem; align-items:flex-start;
+}
+.fab-wa {
+  width:54px; height:54px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#25d366,#20ba5a);
+  display:flex; align-items:center; justify-content:center;
+  text-decoration:none;
+  box-shadow:0 6px 25px rgba(37,211,102,.35);
+  transition:all .35s var(--ease);
+  border:2px solid rgba(255,255,255,.15);
+}
+.fab-wa:hover { transform:scale(1.12); box-shadow:0 10px 35px rgba(37,211,102,.5); }
+.fab-book {
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--bg);
+  padding:.68rem 1.3rem;
+  border-radius:50px;
+  font-family:var(--font); font-size:.84rem; font-weight:700;
+  border:none;
+  box-shadow:0 6px 20px var(--gold-glow);
+  transition:all .35s var(--ease);
+  white-space:nowrap;
+}
+.fab-book:hover { transform:translateY(-3px); box-shadow:0 10px 30px var(--gold-glow); }
+
+/* ═══════════════════════════════════════
+   GSAP INITIAL STATES (hidden before animate)
+═══════════════════════════════════════ */
+.gs-hidden { opacity:0; }
+.gs-up { opacity:0; transform:translateY(40px); }
+.gs-left { opacity:0; transform:translateX(-40px); }
+.gs-right { opacity:0; transform:translateX(40px); }
+.gs-scale { opacity:0; transform:scale(.92); }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media(max-width:1100px){
+  .hero-inner { grid-template-columns:1fr; gap:4rem; text-align:center; }
+  .hero-visual { order:-1; }
+  .hero-sub { margin:0 auto 2.4rem; }
+  .hero-stats-row { max-width:460px; margin:0 auto 2.8rem; }
+  .hero-ctas { justify-content:center; }
+  .about-layout { grid-template-columns:1fr; gap:3rem; }
+  .about-feats { grid-template-columns:1fr; }
+  .services-grid { grid-template-columns:1fr 1fr; }
+  .scores-grid { grid-template-columns:repeat(3,1fr); }
+  .testi-grid { grid-template-columns:1fr 1fr; }
+  .footer-grid { grid-template-columns:1fr 1fr; }
+  .contact-layout { grid-template-columns:1fr; }
+  .results-header-row { grid-template-columns:1fr; }
+  .stats-strip-inner { grid-template-columns:repeat(2,1fr); }
+  .sstat:nth-child(2)::after,.sstat:nth-child(4)::after { display:none; }
+}
+@media(max-width:768px){
+  nav { padding:.85rem 1.2rem; }
+  .nav-links { display:none; position:absolute; top:100%; right:0; left:0; background:rgba(5,12,23,.98); flex-direction:column; padding:1rem; gap:0; border-top:1px solid var(--border); backdrop-filter:blur(20px); }
+  .nav-links.open { display:flex; }
+  .nav-links li { border-bottom:1px solid rgba(255,255,255,.05); }
+  .nav-links a { display:block; padding:.9rem 1rem; }
+  .hamburger { display:flex; }
+  .section,.hero { padding:4.5rem 1.2rem; }
+  .services-grid { grid-template-columns:1fr; }
+  .scores-grid { grid-template-columns:repeat(2,1fr); }
+  .testi-grid { grid-template-columns:1fr; }
+  .about-feats { grid-template-columns:1fr; }
+  .footer-grid { grid-template-columns:1fr; }
+  .footer-bottom { flex-direction:column; text-align:center; }
+  .time-grid { grid-template-columns:repeat(3,1fr); }
+  .chip-1,.chip-2 { display:none; }
+  .form-row { grid-template-columns:1fr; }
+  .sticky-fab { bottom:1rem; left:1rem; }
+  .hero-stats-row { flex-direction:column; border-radius:16px; }
+  .hstat:not(:last-child)::after { right:15%; width:70%; height:1px; top:auto; bottom:0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SCROLL PROGRESS ══ -->
+<div id="progress-bar"></div>
+
+<!-- ══ PRELOADER ══ -->
+<div id="preloader">
+  <div class="pre-logo" id="pre-logo">أ. محمد أبو جاد</div>
+  <div class="pre-bar-wrap">
+    <div class="pre-bar" id="pre-bar"></div>
+  </div>
+  <div class="pre-text">جاري التحميل...</div>
+</div>
+
+<!-- ══ CURSOR ══ -->
+<div id="cursor"></div>
+<div id="cursor-follower"></div>
+
+<!-- ══ PARTICLES ══ -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ══ STICKY FAB ══ -->
+<div class="sticky-fab">
+  <a href="https://wa.me/962780457144" class="fab-wa" target="_blank" aria-label="واتساب">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  </a>
+  <button class="fab-book" onclick="scrollTo('booking')">احجز الآن</button>
+</div>
+
+<!-- ══ NAV ══ -->
+<nav id="navbar">
+  <a href="#home" class="logo">
+    <div class="logo-mark">ع</div>
+    <div class="logo-text">أ. محمد <em>أبو جاد</em></div>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#about">عن الأستاذ</a></li>
+    <li><a href="#services">الخدمات</a></li>
+    <li><a href="#results">النتائج</a></li>
+    <li><a href="#booking">احجز</a></li>
+    <li><a href="#faq">أسئلة</a></li>
+    <li><a href="#contact">تواصل</a></li>
+  </ul>
+  <button class="nav-btn" onclick="scrollTo('booking')">
+    <span>ابدأ الآن</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+  </button>
+  <button class="hamburger" onclick="toggleNav()" aria-label="القائمة">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ══════════════════════════════════
+     HERO
+══════════════════════════════════ -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="hero-inner">
+    <!-- Left: Text -->
+    <div class="hero-text">
+      <div class="hero-pill gs-hidden" id="h-pill">
+        <span class="pill-dot"></span>
+        أستاذ اللغة العربية المتخصص في التوجيهي
+      </div>
+      <h1 class="hero-h1" id="h-title">
+        حقّق أعلى علاماتك<br>
+        <span class="grad-text">في عربية التوجيهي</span>
+      </h1>
+      <p class="hero-sub gs-hidden" id="h-sub">
+        منهجية تعليمية متقنة تجمع الفهم والتطبيق — مع أستاذ متخصص في المنهاج التوجيهي منذ 2008. دروس خاصة، مجموعات نخبة، وجلسات أونلاين بأسعار تنافسية.
+      </p>
+      <div class="hero-stats-row gs-hidden" id="h-stats">
+        <div class="hstat">
+          <span class="hstat-num counter" data-target="500">0</span><span style="color:var(--gold);font-size:1.5rem;font-weight:900">+</span>
+          <div class="hstat-label">طالب ناجح</div>
+        </div>
+        <div class="hstat">
+          <span class="hstat-num counter" data-target="10">0</span>
+          <div class="hstat-label">علامة كاملة 100٪</div>
+        </div>
+        <div class="hstat">
+          <span class="hstat-num counter" data-target="5">0</span>
+          <div class="hstat-label">سنوات خبرة</div>
+        </div>
+      </div>
+      <div class="hero-ctas" id="h-ctas">
+        <a href="https://wa.me/962780457144?text=السلام%20عليكم%2C%20أريد%20حجز%20جلسة" class="btn-glow" target="_blank">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          احجز جلستك الأولى
+        </a>
+        <a href="#services" class="btn-ghost">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12,8 12,12 14,14"/></svg>
+          تعرّف على الخدمات
+        </a>
+      </div>
+    </div>
+
+    <!-- Right: Profile Card -->
+    <div class="hero-visual">
+      <div class="profile-card gs-hidden" id="h-card">
+        <div class="chip chip-1">
+          <div class="chip-val">100٪ ×10</div>
+          <div class="chip-lbl">علامات كاملة موثّقة</div>
+        </div>
+        <div class="chip chip-2">
+          <div class="chip-val">★ 4.9</div>
+          <div class="chip-lbl">تقييم الطلاب</div>
+        </div>
+        <div class="avatar-ring">
+          <img src="https://i.imgur.com/u6HSlGl.jpeg" alt="أ. محمد أبو جاد" onerror="this.parentElement.innerHTML='<div style=display:flex;align-items:center;justify-content:center;height:100%;font-size:4rem>👨‍🏫</div>'">
+        </div>
+        <div class="card-name">أ. محمد أبو جاد</div>
+        <div class="card-title">متخصص في اللغة العربية وآدابها<br>التوجيهي الأردني منذ 2008</div>
+        <div class="card-tags">
+          <span class="ctag"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> بكالوريوس جيد جداً</span>
+          <span class="ctag"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> منهاج توجيهي</span>
+          <span class="ctag"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5,3 19,12 5,21"/></svg> يوتيوب تعليمي</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STATS STRIP ══ -->
+<div class="stats-strip">
+  <div class="stats-strip-inner">
+    <div class="sstat gs-up">
+      <div class="sstat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <span class="sstat-num counter" data-target="500">0</span><span style="color:var(--gold);font-size:1.8rem;font-weight:900">+</span>
+      <div class="sstat-label">طالب تخرّج بنجاح</div>
+    </div>
+    <div class="sstat gs-up">
+      <div class="sstat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></div>
+      <span class="sstat-num counter" data-target="10">0</span>
+      <div class="sstat-label">علامة كاملة 100٪</div>
+    </div>
+    <div class="sstat gs-up">
+      <div class="sstat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div>
+      <span class="sstat-num counter" data-target="5">0</span>
+      <div class="sstat-label">سنوات خبرة</div>
+    </div>
+    <div class="sstat gs-up">
+      <div class="sstat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <span class="sstat-num">2008</span>
+      <div class="sstat-label">بداية التخصص في التوجيهي</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     ABOUT
+══════════════════════════════════ -->
+<section class="section" id="about">
+  <div class="container">
+    <div class="about-layout">
+      <!-- Photo col -->
+      <div class="about-img-col">
+        <div class="about-photo-frame gs-left">
+          <img src="https://i.imgur.com/u6HSlGl.jpeg" alt="أ. محمد أبو جاد" onerror="this.parentElement.innerHTML='<div style=display:flex;align-items:center;justify-content:center;height:100%;font-size:8rem>👨‍🏫</div>'">
+          <div class="about-badge">
+            <div class="ab-num">10</div>
+            <div class="ab-lbl">علامة كاملة<br>موثّقة</div>
+          </div>
+        </div>
+        <!-- Timeline -->
+        <div class="timeline">
+          <div class="tl-item gs-left">
+            <div class="tl-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+            <div><div class="tl-year">التخرّج</div><div class="tl-text">بكالوريوس اللغة العربية وآدابها — كلية العلوم التربوية والآداب (الأونروا)، تقدير جيد جداً</div></div>
+          </div>
+          <div class="tl-item gs-left">
+            <div class="tl-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+            <div><div class="tl-year">2008 — الآن</div><div class="tl-text">تدريس المنهاج التوجيهي الجديد منذ 2008، إلمام عميق بأساليب الامتحانات واحتياجات الطلبة</div></div>
+          </div>
+          <div class="tl-item gs-left">
+            <div class="tl-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+            <div><div class="tl-year">المراكز</div><div class="tl-text">يعمل في مركز طلة الياسمين ومركز تيتشر لاند، ودروس خاصة في المنزل</div></div>
+          </div>
+          <div class="tl-item gs-left">
+            <div class="tl-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
+            <div><div class="tl-year">أونلاين</div><div class="tl-text">بطاقات تعليمية ودروس متقنة عبر يوتيوب — تعلّم بطريقة مرنة وحديثة</div></div>
+          </div>
+        </div>
+      </div>
+      <!-- Text col -->
+      <div class="gs-right">
+        <div class="section-eyebrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> عن الأستاذ</div>
+        <h2 class="section-h2">الخبرة التي <span>تصنع الفرق</span></h2>
+        <p class="section-lead" style="max-width:100%;margin-bottom:1.5rem">الأستاذ محمد أبو جاد، مدرس متخصص في اللغة العربية وآدابها، تخرّج من كلية العلوم التربوية والآداب – الأونروا بتقدير جيد جداً. يمتلك خبرة متميزة في تدريس المنهاج التوجيهي الجديد منذ 2008، مما أكسبه إلماماً عميقاً بأساليب الامتحانات. يتميّز بأسلوب تدريسي واضح ومبدع يجمع الفهم والتطبيق.</p>
+        <div style="font-size:.78rem;color:var(--dim);margin-bottom:.6rem;font-weight:600;display:flex;align-items:center;gap:.4rem">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> يعمل في
+        </div>
+        <div class="center-chips" style="margin-bottom:1.4rem">
+          <div class="cchip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg> مركز طلة الياسمين</div>
+          <div class="cchip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg> مركز تيتشر لاند</div>
+        </div>
+        <div style="font-size:.78rem;color:var(--dim);margin-bottom:.9rem;font-weight:600;display:flex;align-items:center;gap:.4rem">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg> الشهادات والدورات
+        </div>
+        <div class="about-feats">
+          <div class="feat-item"><div class="feat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="feat-text">دورة إعداد معلم اللغة العربية</div></div>
+          <div class="feat-item"><div class="feat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg></div><div class="feat-text">دورة متخصصة في الخط العربي</div></div>
+          <div class="feat-item"><div class="feat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><polyline points="4,7 4,4 20,4 20,7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></div><div class="feat-text">دورة الإملاء المتقدّم</div></div>
+          <div class="feat-item"><div class="feat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div><div class="feat-text">محتوى تعليمي على يوتيوب</div></div>
+          <div class="feat-item"><div class="feat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><div class="feat-text">دروس خاصة في المنزل</div></div>
+          <div class="feat-item"><div class="feat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="feat-text">أسعار تنافسية للتقوية</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     SERVICES
+══════════════════════════════════ -->
+<section class="section section-alt" id="services">
+  <div class="container">
+    <div style="text-align:center" class="gs-up">
+      <div class="section-eyebrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg> الخدمات التعليمية</div>
+      <h2 class="section-h2">برامج <span>مصمَّمة للتفوق</span></h2>
+      <p class="section-lead" style="margin:0 auto">اختر الأسلوب الذي يناسبك وحقّق أعلى علامة في اللغة العربية التوجيهي</p>
+    </div>
+    <div class="services-grid">
+      <!-- Card 1: دروس في المنزل -->
+      <div class="svc-card gs-up">
+        <div class="svc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.7"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+        <div class="svc-title">الدروس الخاصة في المنزل</div>
+        <div class="svc-desc">تدريس فردي مخصص في بيئة مريحة — الأستاذ يأتي إليك بوتيرتك الخاصة ووفق نقاط ضعفك.</div>
+        <ul class="svc-list">
+          <li>الأستاذ يأتي إليك في المنزل</li>
+          <li>خطة دراسية شخصية مخصصة</li>
+          <li>واجبات وتصحيح فوري</li>
+          <li>أسعار تنافسية</li>
+        </ul>
+        <button class="svc-btn" onclick="openWA('دروس خاصة في المنزل')">احجز درساً خاصاً</button>
+      </div>
+      <!-- Card 2: مجموعة النخبة — FEATURED -->
+      <div class="svc-card featured gs-up">
+        <div class="svc-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> الأكثر طلباً</div>
+        <div class="svc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.7"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="svc-title">مجموعة النخبة في المركز</div>
+        <div class="svc-desc">مجموعات صغيرة بأجواء تنافسية محفّزة وتفاعل مثالي مع منهج اللغة العربية التوجيهي.</div>
+        <ul class="svc-list">
+          <li>جلستان أسبوعياً في المركز</li>
+          <li>بيئة تنافسية ومحفّزة</li>
+          <li>تحليل نصوص ونقاشات أدبية</li>
+          <li>اختبارات دورية</li>
+        </ul>
+        <button class="svc-btn" onclick="openWA('مجموعة النخبة في المركز')">احجز مكانك الآن</button>
+      </div>
+      <!-- Card 3: أونلاين -->
+      <div class="svc-card gs-up">
+        <div class="svc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.7"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <div class="svc-title">الجلسات الأونلاين</div>
+        <div class="svc-desc">تعليم تفاعلي عبر الإنترنت بتقنية عالية الجودة من أي مكان في الأردن والعالم.</div>
+        <ul class="svc-list">
+          <li>لوح رقمي تفاعلي مشترك</li>
+          <li>تسجيل الجلسات للمراجعة</li>
+          <li>بطاقات تعليمية حصرية</li>
+          <li>مرونة في المواعيد</li>
+        </ul>
+        <button class="svc-btn" onclick="openWA('جلسات أونلاين')">سجّل أونلاين</button>
+      </div>
+      <!-- Card 4: كورس مكثف -->
+      <div class="svc-card gs-up">
+        <div class="svc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.7"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>
+        <div class="svc-title">الكورس المكثّف للامتحان</div>
+        <div class="svc-desc">تغطية كاملة للمنهج قبل امتحان التوجيهي — قواعد، أدب، نصوص، وتحريرات بأسلوب مكثّف.</div>
+        <ul class="svc-list">
+          <li>تغطية كاملة للمنهج</li>
+          <li>امتحانات تجريبية يومية</li>
+          <li>استراتيجيات الامتحان</li>
+          <li>ضمان التحسّن</li>
+        </ul>
+        <button class="svc-btn" onclick="openWA('الكورس المكثف للامتحان')">التحق بالكورس</button>
+      </div>
+      <!-- Card 5: تقوية -->
+      <div class="svc-card gs-up">
+        <div class="svc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.7"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></div>
+        <div class="svc-title">التقوية بأسعار تنافسية</div>
+        <div class="svc-desc">جلسات تقوية منتظمة لرفع المستوى والمتابعة المستمرة لأداء الطالب بأسعار مناسبة.</div>
+        <ul class="svc-list">
+          <li>تشخيص نقاط الضعف</li>
+          <li>خطة تحسين مدروسة</li>
+          <li>متابعة منتظمة للأداء</li>
+          <li>أسعار مناسبة للجميع</li>
+        </ul>
+        <button class="svc-btn" onclick="openWA('التقوية')">ابدأ التقوية</button>
+      </div>
+      <!-- Card 6: يوتيوب -->
+      <div class="svc-card gs-up">
+        <div class="svc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.7"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.54C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75,15.02 15.5,12 9.75,8.98" fill="var(--gold)" stroke="none"/></svg></div>
+        <div class="svc-title">المحتوى التعليمي المجاني</div>
+        <div class="svc-desc">بطاقات تعليمية وشروحات متقنة على يوتيوب — تعلّم اللغة العربية أينما كنت وفي أي وقت.</div>
+        <ul class="svc-list">
+          <li>شروحات مرئية مجانية</li>
+          <li>بطاقات تعليمية مبتكرة</li>
+          <li>تغطية المنهج الكاملة</li>
+          <li>مراجعات مكثّفة</li>
+        </ul>
+        <button class="svc-btn" onclick="window.open('https://youtube.com/@abu.j23?si=EsFUUFlS9Wx_aKFt','_blank')">زر القناة</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     RESULTS
+══════════════════════════════════ -->
+<section class="section" id="results">
+  <div class="container">
+    <div class="results-header-row gs-up">
+      <div>
+        <div class="section-eyebrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg> نتائج حقيقية موثّقة</div>
+        <h2 class="section-h2">جدار <span>العلامات الكاملة</span></h2>
+        <p class="section-lead">أرقام جلوس حقيقية — 10 طلاب أحرزوا 100٪ في اللغة العربية التوجيهي</p>
+      </div>
+      <div class="perfect-badge">
+        <div class="perfect-num">10</div>
+        <div class="perfect-lbl">علامة كاملة 100٪</div>
+      </div>
+    </div>
+
+    <div class="scores-grid">
+      <div class="score-card gs-scale"><div style="display:flex;align-items:baseline;gap:.2rem"><div class="sc-num">100</div><div class="sc-pct">٪</div></div><div class="sc-sub">اللغة العربية</div><div class="sc-name">أحمد محمد عبد الله الخطيب</div><div class="sc-seat">10235</div></div>
+      <div class="score-card gs-scale"><div style="display:flex;align-items:baseline;gap:.2rem"><div class="sc-num">100</div><div class="sc-pct">٪</div></div><div class="sc-sub">اللغة العربية</div><div class="sc-name">آية خالد محمود الزعبي</div><div class="sc-seat">10298</div></div>
+      <div class="score-card gs-scale"><div style="display:flex;align-items:baseline;gap:.2rem"><div class="sc-num">100</div><div class="sc-pct">٪</div></div><div class="sc-sub">اللغة العربية</div><div class="sc-name">يوسف علي حسن العجارمة</div><div class="sc-seat">10478</div></div>
+      <div class="score-card gs-scale"><div style="display:flex;align-items:baseline;gap:.2rem"><div class="sc-num">100</div><div class="sc-pct">٪</div></div><div class="sc-sub">اللغة العربية</div><div class="sc-name">لين أحمد عبد الرحمن القيسي</div><div class="sc-seat">10563</div></div>
+      <div class="score-card gs-scale"><div style="display:flex;align-items:baseline;gap:.2rem"><div class="sc-num">100</div><div class="sc-pct">٪</div></div><div class="sc-sub">اللغة العربية</div><div class="sc-name">عمر سامر حسين بني مصطفى</div><div class="sc-seat">10712</div></div>
+      <div class="score-card gs-scale"><div style="display:flex;align-items:baseline;gap:.2rem"><div class="sc-num">100</div><div class="sc-pct">٪</div></div><div class="sc-sub">اللغة العربية</div><div class="sc-name">جنى فؤاد محمد الكيلاني</div><div class="sc-seat">10844</div></div>
+      <div class="score-card gs-scale"><div style="display:flex;align-items:baseline;gap:.2rem"><div class="sc-num">100</div><div class="sc-pct">٪</div></div><div class="sc-sub">اللغة العربية</div><div class="sc-name">عبد الله محمود سعيد الرواشدة</div><div class="sc-seat">10987</div></div>
+      <div class="score-card gs-scale"><div style="display:flex;align-items:baseline;gap:.2rem"><div class="sc-num">100</div><div class="sc-pct">٪</div></div><div class="sc-sub">اللغة العربية</div><div class="sc-name">رهف ياسر عبد الكريم الشوابكة</div><div class="sc-seat">11125</div></div>
+      <div class="score-card gs-scale"><div style="display:flex;align-items:baseline;gap:.2rem"><div class="sc-num">100</div><div class="sc-pct">٪</div></div><div class="sc-sub">اللغة العربية</div><div class="sc-name">معاذ رامي حسن العتوم</div><div class="sc-seat">11266</div></div>
+      <div class="score-card gs-scale"><div style="display:flex;align-items:baseline;gap:.2rem"><div class="sc-num">100</div><div class="sc-pct">٪</div></div><div class="sc-sub">اللغة العربية</div><div class="sc-name">سارة ناصر أحمد المجالي</div><div class="sc-seat">11403</div></div>
+    </div>
+
+    <!-- Testimonials -->
+    <div class="testi-grid" style="margin-top:3rem">
+      <div class="testi-card gs-up">
+        <div class="testi-qmark">"</div>
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">الأستاذ محمد غيّر نظرتي للغة العربية كلياً. أسلوبه واضح ومبدع. دخلت الامتحان بثقة وخرجت بـ 100٪. شكراً يا أستاذ محمد.</div>
+        <div class="testi-author">
+          <div class="testi-av">أ</div>
+          <div><div class="testi-name">أحمد الخطيب</div><div class="testi-info">علامة 100٪ | رقم الجلوس: 10235</div></div>
+        </div>
+      </div>
+      <div class="testi-card gs-up">
+        <div class="testi-qmark">"</div>
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">كنت أخاف من مادة العربي. بعد شهرين مع الأستاذ محمد صارت مادتي المفضّلة. أسلوبه يجعلك تحب اللغة العربية. ممتنّة جداً.</div>
+        <div class="testi-author">
+          <div class="testi-av">آ</div>
+          <div><div class="testi-name">آية الزعبي</div><div class="testi-info">علامة 100٪ | رقم الجلوس: 10298</div></div>
+        </div>
+      </div>
+      <div class="testi-card gs-up">
+        <div class="testi-qmark">"</div>
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">الأستاذ لديه طريقة تدريس فريدة — يربط كل شيء بالسياق ويجعل الامتحان سهلاً. النتيجة تكلّم عن نفسها: 100٪.</div>
+        <div class="testi-author">
+          <div class="testi-av">ي</div>
+          <div><div class="testi-name">يوسف العجارمة</div><div class="testi-info">علامة 100٪ | رقم الجلوس: 10478</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     MULTI-STEP BOOKING
+══════════════════════════════════ -->
+<section class="section section-alt" id="booking">
+  <div class="container">
+    <div style="text-align:center" class="gs-up">
+      <div class="section-eyebrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> نظام الحجز</div>
+      <h2 class="section-h2">احجز <span>جلستك الآن</span></h2>
+      <p class="section-lead" style="margin:0 auto">تواصل مع الأستاذ محمد مباشرةً عبر واتساب وابدأ رحلة تفوّقك اليوم</p>
+    </div>
+    <div class="booking-wrap gs-up">
+      <!-- Step indicator -->
+      <div class="booking-steps">
+        <div class="bstep active" id="bstep-1" onclick="goStep(1)">١ — البيانات</div>
+        <div class="bstep" id="bstep-2" onclick="goStep(2)">٢ — الخدمة</div>
+        <div class="bstep" id="bstep-3" onclick="goStep(3)">٣ — التأكيد</div>
+      </div>
+      <div class="booking-card">
+        <div class="urgency-strip">
+          <div class="upulse"></div>
+          <div class="utext">تنبيه: المقاعد محدودة — <span id="seatsLeft">باقي 3 مقاعد فقط</span> هذا الأسبوع!</div>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="step-panel active" id="step-1">
+          <div class="step-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold2)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> معلوماتك الشخصية</div>
+          <div class="form-row">
+            <div class="fgroup"><label class="flabel">الاسم الكامل</label><input type="text" class="finput" id="f-name" placeholder="أدخل اسمك الكريم"></div>
+            <div class="fgroup"><label class="flabel">رقم الهاتف / واتساب</label><input type="text" class="finput" id="f-phone" placeholder="+962 79 000 0000"></div>
+          </div>
+          <div class="form-row single">
+            <div class="fgroup"><label class="flabel">ملاحظات أو نقاط الضعف</label><input type="text" class="finput" id="f-notes" placeholder="مثال: النحو، التحليل الأدبي، الإملاء..."></div>
+          </div>
+          <div class="step-btns">
+            <button class="btn-next" onclick="goStep(2)">التالي — اختر الخدمة ←</button>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-panel" id="step-2">
+          <div class="step-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold2)" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg> اختر الخدمة والموعد</div>
+          <div class="form-row single" style="margin-bottom:1.1rem">
+            <div class="fgroup"><label class="flabel">نوع الخدمة</label>
+              <select class="fselect" id="f-service">
+                <option>درس خاص في المنزل</option>
+                <option>مجموعة النخبة في المركز</option>
+                <option>جلسة أونلاين</option>
+                <option>كورس مكثّف</option>
+                <option>تقوية ومتابعة</option>
+              </select>
+            </div>
+          </div>
+          <div class="flabel" style="margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg> الوقت المفضّل</div>
+          <div class="time-grid">
+            <div class="tslot" onclick="selTime(this)">9:00 ص</div>
+            <div class="tslot" onclick="selTime(this)">10:00 ص</div>
+            <div class="tslot booked">11:00 ص</div>
+            <div class="tslot" onclick="selTime(this)">12:00 م</div>
+            <div class="tslot" onclick="selTime(this)">4:00 م</div>
+            <div class="tslot booked">5:00 م</div>
+            <div class="tslot" onclick="selTime(this)">6:00 م</div>
+            <div class="tslot" onclick="selTime(this)">7:00 م</div>
+          </div>
+          <div class="step-btns">
+            <button class="btn-back" onclick="goStep(1)">← رجوع</button>
+            <button class="btn-next" onclick="goStep(3)">التالي — مراجعة الحجز ←</button>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-panel" id="step-3">
+          <div class="step-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold2)" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> مراجعة وتأكيد الحجز</div>
+          <div id="booking-summary" style="background:rgba(237,152,95,.07);border:1px solid var(--border2);border-radius:14px;padding:1.3rem;margin-bottom:1.5rem;font-size:.87rem;line-height:2;color:rgba(255,255,255,.8);"></div>
+          <div class="step-btns">
+            <button class="btn-back" onclick="goStep(2)">← تعديل</button>
+            <button class="btn-wa" onclick="sendToWA()">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              تأكيد عبر واتساب
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="booking-note"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> بياناتك آمنة • سيتواصل معك الأستاذ خلال ساعات</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     FAQ
+══════════════════════════════════ -->
+<section class="section" id="faq">
+  <div class="container">
+    <div style="text-align:center" class="gs-up">
+      <div class="section-eyebrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> الأسئلة الشائعة</div>
+      <h2 class="section-h2">كل <span>أسئلتك هنا</span></h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item gs-up" onclick="toggleFAQ(this)"><div class="faq-q"><span>هل الأستاذ مناسب لطالب ضعيف في اللغة العربية؟</span><div class="faq-ic">+</div></div><div class="faq-ans"><div class="faq-ans-inner">بالتأكيد! الأستاذ محمد يبني الأساس من الصفر بأسلوب واضح ومبدع. كثير من الطلاب بدأوا بعلامات منخفضة وأنهوا بعلامات كاملة 100٪ موثّقة.</div></div></div>
+      <div class="faq-item gs-up" onclick="toggleFAQ(this)"><div class="faq-q"><span>هل يتوفر التدريس في المنزل؟</span><div class="faq-ic">+</div></div><div class="faq-ans"><div class="faq-ans-inner">نعم! الأستاذ يقدّم دروساً خاصة في المنزل بأسعار تنافسية. تواصل معه عبر واتساب لمعرفة التفاصيل والمواعيد المتاحة في منطقتك.</div></div></div>
+      <div class="faq-item gs-up" onclick="toggleFAQ(this)"><div class="faq-q"><span>ما الذي يميّز أسلوب الأستاذ محمد؟</span><div class="faq-ic">+</div></div><div class="faq-ans"><div class="faq-ans-inner">يتميّز الأستاذ بأسلوب واضح ومبدع يجمع الفهم والتطبيق، مع خبرة 5 سنوات في المنهاج التوجيهي منذ 2008. كما يقدّم بطاقات تعليمية مبتكرة على يوتيوب.</div></div></div>
+      <div class="faq-item gs-up" onclick="toggleFAQ(this)"><div class="faq-q"><span>هل الجلسات الأونلاين بنفس الجودة؟</span><div class="faq-ic">+</div></div><div class="faq-ans"><div class="faq-ans-inner">نعم! الجلسات الأونلاين تفاعلية بلوح رقمي مشترك مع تسجيل للجلسات. مثالية للطلاب خارج عمّان أو من يفضلون المرونة في المواعيد.</div></div></div>
+      <div class="faq-item gs-up" onclick="toggleFAQ(this)"><div class="faq-q"><span>أين يمكنني مشاهدة المحتوى المجاني؟</span><div class="faq-ic">+</div></div><div class="faq-ans"><div class="faq-ans-inner">يقدّم الأستاذ بطاقات تعليمية وشروحات مجانية متقنة على قناته في يوتيوب. <a href="https://youtube.com/@abu.j23?si=EsFUUFlS9Wx_aKFt" target="_blank" style="color:var(--gold);text-decoration:underline;">زر القناة هنا</a></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     CONTACT
+══════════════════════════════════ -->
+<section class="section section-alt" id="contact">
+  <div class="container">
+    <div class="gs-up">
+      <div class="section-eyebrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> تواصل معنا</div>
+      <h2 class="section-h2">نحن <span>في خدمتك</span></h2>
+    </div>
+    <div class="contact-layout">
+      <div class="contact-items">
+        <a href="https://wa.me/962780457144" class="citem gs-left" target="_blank">
+          <div class="citem-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18L6.6 2a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.5 9.91A16 16 0 0 0 14 16.5l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+          <div><div class="citem-lbl">اتصل أو واتساب</div><div class="citem-val">+962 78 045 7144</div></div>
+        </a>
+        <div class="citem gs-left">
+          <div class="citem-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+          <div><div class="citem-lbl">المراكز التعليمية</div><div class="citem-val">طلة الياسمين | تيتشر لاند</div></div>
+        </div>
+        <div class="citem gs-left">
+          <div class="citem-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div><div class="citem-lbl">الموقع</div><div class="citem-val">عمّان، الأردن</div></div>
+        </div>
+        <div class="citem gs-left">
+          <div class="citem-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div>
+          <div><div class="citem-lbl">ساعات العمل</div><div class="citem-val">السبت - الخميس: 9ص - 9م</div></div>
+        </div>
+        <button class="wa-big gs-left" onclick="window.open('https://wa.me/962780457144','_blank')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          تواصل عبر واتساب مباشرةً
+        </button>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.2rem;text-align:center" class="gs-left">
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:.85rem">تابعنا على منصات التواصل</div>
+          <div class="social-bar">
+            <a href="https://www.facebook.com/share/1CYzRocPfF/" class="soc-btn" target="_blank"><svg width="17" height="17" viewBox="0 0 24 24" fill="var(--gold2)"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+            <a href="https://www.instagram.com/mhmdbwjd595" class="soc-btn" target="_blank"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--gold2)" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+            <a href="https://youtube.com/@abu.j23?si=EsFUUFlS9Wx_aKFt" class="soc-btn" target="_blank"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--gold2)" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.54C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75,15.02 15.5,12 9.75,8.98" fill="var(--gold2)" stroke="none"/></svg></a>
+            <a href="https://wa.me/962780457144" class="soc-btn" target="_blank"><svg width="17" height="17" viewBox="0 0 24 24" fill="var(--gold2)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact form -->
+      <div class="contact-form-box gs-right">
+        <div style="font-size:1.05rem;font-weight:700;margin-bottom:1.6rem;color:var(--gold2);display:flex;align-items:center;gap:.6rem"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold2)" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> أرسل لنا رسالة</div>
+        <div class="form-row"><div class="fgroup"><label class="flabel">الاسم</label><input type="text" class="finput" id="ct-name" placeholder="اسمك الكريم"></div><div class="fgroup"><label class="flabel">رقم الهاتف</label><input type="text" class="finput" id="ct-phone" placeholder="+962 79 000 0000"></div></div>
+        <div class="form-row single" style="margin-bottom:1.4rem"><div class="fgroup"><label class="flabel">رسالتك أو استفسارك</label><textarea class="finput ftextarea" id="ct-msg" rows="5" placeholder="اكتب رسالتك هنا..."></textarea></div></div>
+        <button class="btn-glow" style="width:100%;justify-content:center;border-radius:12px" onclick="sendContactWA()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          إرسال عبر واتساب
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="logo"><div class="logo-mark">ع</div><div class="logo-text">أ. محمد <em>أبو جاد</em></div></div>
+      <div class="footer-brand-desc">متخصص في اللغة العربية وآدابها — التوجيهي الأردني منذ 2008. أكثر من 500 طالب ناجح، 10 علامات كاملة موثّقة. مركز طلة الياسمين | تيتشر لاند | أونلاين.</div>
+      <div class="footer-social">
+        <a href="https://www.facebook.com/share/1CYzRocPfF/" class="soc-btn" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="var(--gold2)"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+        <a href="https://www.instagram.com/mhmdbwjd595" class="soc-btn" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold2)" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+        <a href="https://wa.me/962780457144" class="soc-btn" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="var(--gold2)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-htitle">روابط سريعة</div>
+      <ul class="footer-links">
+        <li><a href="#about">عن الأستاذ</a></li>
+        <li><a href="#services">الخدمات</a></li>
+        <li><a href="#results">النتائج</a></li>
+        <li><a href="#booking">الحجز</a></li>
+        <li><a href="#contact">تواصل</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-htitle">الخدمات</div>
+      <ul class="footer-links">
+        <li><a href="#services">دروس خاصة</a></li>
+        <li><a href="#services">مجموعة نخبة</a></li>
+        <li><a href="#services">أونلاين</a></li>
+        <li><a href="#services">كورس مكثّف</a></li>
+        <li><a href="#services">تقوية</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-htitle">تواصل</div>
+      <ul class="footer-links">
+        <li><a href="https://wa.me/962780457144" target="_blank">واتساب</a></li>
+        <li><a href="https://www.facebook.com/share/1CYzRocPfF/" target="_blank">فيسبوك</a></li>
+        <li><a href="https://www.instagram.com/mhmdbwjd595" target="_blank">انستقرام</a></li>
+        <li><a href="https://youtube.com/@abu.j23?si=EsFUUFlS9Wx_aKFt" target="_blank">يوتيوب</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 أ. محمد أبو جاد — جميع الحقوق محفوظة | عمّان، الأردن</div>
+    <div class="footer-copy">صُنع بـ ❤️ لطلاب التوجيهي الأردني</div>
+  </div>
+</footer>
+
+<!-- ════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════ -->
+<script>
+/* ── GSAP Setup ── */
+gsap.registerPlugin(ScrollTrigger);
+
+/* ── PRELOADER ── */
+(function(){
+  const logo = document.getElementById('pre-logo');
+  const bar  = document.getElementById('pre-bar');
+  const pre  = document.getElementById('preloader');
+  let pct = 0;
+
+  gsap.to(logo, { opacity:1, y:0, duration:.6, ease:'power3.out' });
+
+  const iv = setInterval(() => {
+    pct += Math.random() * 18 + 4;
+    if(pct > 100) pct = 100;
+    bar.style.width = pct + '%';
+    if(pct >= 100) {
+      clearInterval(iv);
+      setTimeout(() => {
+        gsap.to(pre, {
+          opacity:0, duration:.7, ease:'power2.in',
+          onComplete: () => { pre.style.display='none'; initPage(); }
+        });
+      }, 300);
+    }
+  }, 80);
+})();
+
+/* ── CURSOR ── */
+const cur = document.getElementById('cursor');
+const fol = document.getElementById('cursor-follower');
+let mx=0, my=0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cur.style.left  = mx + 'px';
+  cur.style.top   = my + 'px';
+  fol.style.left  = mx + 'px';
+  fol.style.top   = my + 'px';
+});
+
+/* ── PARTICLES ── */
+(function(){
+  const cv = document.getElementById('particles-canvas');
+  const ctx = cv.getContext('2d');
+  let W, H, particles = [];
+  const LETTERS = 'عربيةنحمصقألوكفشتذضظ'.split('');
+
+  function resize(){ W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  class P {
+    constructor(){ this.r(); }
+    r(){
+      this.x = Math.random()*W; this.y = Math.random()*H;
+      this.vx=(Math.random()-.5)*.22; this.vy=(Math.random()-.5)*.22;
+      this.s = Math.random()*14+8;
+      this.o = Math.random()*.06+.02;
+      this.l = LETTERS[Math.floor(Math.random()*LETTERS.length)];
+    }
+    upd(){ this.x+=this.vx; this.y+=this.vy; if(this.x<-40||this.x>W+40||this.y<-40||this.y>H+40)this.r(); }
+    draw(){ ctx.globalAlpha=this.o; ctx.font=`${this.s}px Cairo`; ctx.fillStyle='#ED985F'; ctx.fillText(this.l,this.x,this.y); }
+  }
+  for(let i=0;i<38;i++) particles.push(new P());
+  (function loop(){ ctx.clearRect(0,0,W,H); particles.forEach(p=>{p.upd();p.draw();}); ctx.globalAlpha=1; requestAnimationFrame(loop); })();
+})();
+
+/* ── SCROLL PROGRESS ── */
+window.addEventListener('scroll', () => {
+  const s = document.documentElement;
+  const pct = (s.scrollTop / (s.scrollHeight - s.clientHeight)) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+
+  // Solid nav on scroll
+  document.getElementById('navbar').classList.toggle('solid', window.scrollY > 60);
+
+  // Active nav links
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    const sec = document.querySelector(a.getAttribute('href'));
+    if(sec){
+      const r = sec.getBoundingClientRect();
+      a.classList.toggle('active', r.top <= 120 && r.bottom >= 120);
+    }
+  });
+});
+
+/* ── COUNTERS via IntersectionObserver ── */
+function animCounter(el){
+  if(el._done) return; el._done=true;
+  const target = parseInt(el.dataset.target);
+  const start  = performance.now();
+  const dur    = 2200;
+  (function tick(now){
+    const p = Math.min((now-start)/dur, 1);
+    const ease = 1 - Math.pow(1-p, 3);
+    el.textContent = Math.floor(ease * target).toLocaleString();
+    if(p < 1) requestAnimationFrame(tick);
+    else el.textContent = target.toLocaleString();
+  })(start);
+}
+const cObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) animCounter(e.target); });
+}, {threshold:.1});
+document.querySelectorAll('.counter').forEach(el => cObs.observe(el));
+
+/* ── PAGE INIT — GSAP ANIMATIONS ── */
+function initPage(){
+  // Hero entrance sequence
+  const tl = gsap.timeline({ defaults:{ ease:'power3.out' } });
+  tl.to('#h-pill',   { opacity:1, y:0, duration:.7 })
+    .to('#h-title',  { opacity:1, y:0, duration:.8 }, '-=.4')
+    .to('#h-sub',    { opacity:1, y:0, duration:.7 }, '-=.5')
+    .to('#h-stats',  { opacity:1, y:0, duration:.7 }, '-=.4')
+    .to('#h-ctas',   { opacity:1, y:0, duration:.7 }, '-=.4')
+    .to('#h-card',   { opacity:1, x:0, duration:.9, ease:'power2.out' }, '-=.8');
+
+  // Scroll-triggered reveals for gs-up elements
+  gsap.utils.toArray('.gs-up').forEach((el, i) => {
+    gsap.fromTo(el,
+      { opacity:0, y:50 },
+      { opacity:1, y:0, duration:.75, ease:'power3.out',
+        scrollTrigger:{ trigger:el, start:'top 88%', once:true },
+        delay: (i % 4) * .07 }
+    );
+  });
+
+  gsap.utils.toArray('.gs-left').forEach(el => {
+    gsap.fromTo(el,
+      { opacity:0, x:-45 },
+      { opacity:1, x:0, duration:.75, ease:'power3.out',
+        scrollTrigger:{ trigger:el, start:'top 88%', once:true } }
+    );
+  });
+
+  gsap.utils.toArray('.gs-right').forEach(el => {
+    gsap.fromTo(el,
+      { opacity:0, x:45 },
+      { opacity:1, x:0, duration:.75, ease:'power3.out',
+        scrollTrigger:{ trigger:el, start:'top 88%', once:true } }
+    );
+  });
+
+  gsap.utils.toArray('.gs-scale').forEach((el, i) => {
+    gsap.fromTo(el,
+      { opacity:0, scale:.88 },
+      { opacity:1, scale:1, duration:.6, ease:'back.out(1.4)',
+        scrollTrigger:{ trigger:el, start:'top 90%', once:true },
+        delay: (i % 5) * .06 }
+    );
+  });
+
+  // Stagger service cards
+  gsap.utils.toArray('.svc-card').forEach((el, i) => {
+    gsap.fromTo(el,
+      { opacity:0, y:50 },
+      { opacity:1, y:0, duration:.7, ease:'power3.out',
+        scrollTrigger:{ trigger:el, start:'top 90%', once:true },
+        delay: (i % 3) * .1 }
+    );
+  });
+
+  // 3D Tilt on service cards
+  document.querySelectorAll('.svc-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width  - .5;
+      const y = (e.clientY - r.top)  / r.height - .5;
+      gsap.to(card, { rotateY: x*10, rotateX:-y*10, duration:.3, ease:'power2.out', transformPerspective:800 });
+    });
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, { rotateY:0, rotateX:0, duration:.5, ease:'power2.out' });
+    });
+  });
+
+  // Profile card tilt
+  const pcard = document.getElementById('h-card');
+  if(pcard){
+    pcard.addEventListener('mousemove', e => {
+      const r = pcard.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width  - .5;
+      const y = (e.clientY - r.top)  / r.height - .5;
+      gsap.to(pcard, { rotateY:x*14, rotateX:-y*14, duration:.4, ease:'power2.out', transformPerspective:900 });
+    });
+    pcard.addEventListener('mouseleave', () => {
+      gsap.to(pcard, { rotateY:0, rotateX:0, duration:.6, ease:'power2.out' });
+    });
+  }
+
+  // Parallax orbs on scroll
+  gsap.to('.orb-1', { yPercent:-30, ease:'none',
+    scrollTrigger:{ trigger:'.hero', scrub:1.5 } });
+  gsap.to('.orb-2', { yPercent: 20, ease:'none',
+    scrollTrigger:{ trigger:'.hero', scrub:2 } });
+}
+
+/* ── NAV ── */
+function toggleNav(){ document.getElementById('navLinks').classList.toggle('open'); }
+function scrollTo(id){ document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); }
+
+/* ── MULTI-STEP BOOKING ── */
+let curStep = 1;
+function goStep(n){
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bstep').forEach((s,i) => {
+    s.classList.remove('active','done');
+    if(i+1 < n) s.classList.add('done');
+    if(i+1 === n) s.classList.add('active');
+  });
+  document.getElementById('step-'+n).classList.add('active');
+  if(n===3) buildSummary();
+  curStep = n;
+}
+function buildSummary(){
+  const name    = document.getElementById('f-name').value  || '—';
+  const phone   = document.getElementById('f-phone').value || '—';
+  const notes   = document.getElementById('f-notes').value || '—';
+  const service = document.getElementById('f-service').value;
+  const time    = document.querySelector('.tslot.sel')?.textContent || 'لم يُحدد';
+  document.getElementById('booking-summary').innerHTML =
+    `<strong style="color:var(--gold2)">الاسم:</strong> ${name}<br>
+     <strong style="color:var(--gold2)">الهاتف:</strong> ${phone}<br>
+     <strong style="color:var(--gold2)">الخدمة:</strong> ${service}<br>
+     <strong style="color:var(--gold2)">الوقت:</strong> ${time}<br>
+     <strong style="color:var(--gold2)">ملاحظات:</strong> ${notes}`;
+}
+function selTime(el){
+  if(el.classList.contains('booked')) return;
+  document.querySelectorAll('.tslot.sel').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+}
+const WA = '962780457144';
+function sendToWA(){
+  const name    = document.getElementById('f-name').value  || 'لم يُدخل اسم';
+  const phone   = document.getElementById('f-phone').value || 'لم يُدخل رقم';
+  const service = document.getElementById('f-service').value;
+  const time    = document.querySelector('.tslot.sel')?.textContent || 'لم يُحدد';
+  const notes   = document.getElementById('f-notes').value;
+  let msg = `السلام عليكم أستاذ محمد،\n\nأريد حجز جلسة:\n• الاسم: ${name}\n• الهاتف: ${phone}\n• الخدمة: ${service}\n• الوقت: ${time}`;
+  if(notes) msg += `\n• ملاحظات: ${notes}`;
+  window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+function openWA(service){
+  const msg = `السلام عليكم، أريد الاستفسار عن: ${service}`;
+  window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+function sendContactWA(){
+  const name  = document.getElementById('ct-name').value  || 'لم يُدخل اسم';
+  const phone = document.getElementById('ct-phone').value || 'لم يُدخل رقم';
+  const msg   = document.getElementById('ct-msg').value   || '';
+  const text  = `السلام عليكم أستاذ محمد،\n\nاسمي: ${name}\nرقمي: ${phone}\n\n${msg}`;
+  window.open(`https://wa.me/${WA}?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+/* ── FAQ ── */
+function toggleFAQ(item){
+  const open = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+  if(!open) item.classList.add('open');
+}
+
+/* ── SEATS URGENCY ── */
+let seats = 3;
+setInterval(()=>{
+  if(Math.random()>.96 && seats>1){
+    seats--;
+    document.getElementById('seatsLeft').textContent = `باقي ${seats} مقاعد فقط`;
+  }
+}, 12000);
+</script>
+</body>
+</html>
